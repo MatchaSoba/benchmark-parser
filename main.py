@@ -2,7 +2,6 @@ import PySimpleGUI as sg
 import os.path
 from re import compile, findall
 from openpyxl import Workbook
-from openpyxl.worksheet.table import Table, TableStyleInfo
 
 
 # ---------------------------------------All functions here-------------------------------------------------------
@@ -59,7 +58,9 @@ def parse_text_cdm(input_file_path, encoding='utf16'):
     return output_list
 
 
-def new_xlsx(pn_602=[], pn_700=[], pn_804=[], pn_cinebench=[], output_file_path=''):
+def new_xlsx(pn_602=None, pn_700=None, pn_804=None, pn_cinebench=None, output_file_path=''):
+    if pn_602 is None:
+        pn_602 = []
     dest_filename = 'output.xlsx'
     dest_filepath = output_file_path
     wb = Workbook()
@@ -171,7 +172,8 @@ file_list_column = [
 ]
 
 functions_column = [
-    [sg.Text('NOTE: Select the FOLDER with the reports, then click PARSE NOW', text_color='#44d62c', background_color='black')],
+    [sg.Text('NOTE: Select the FOLDER with the reports, then click PARSE NOW', text_color='#44d62c',
+             background_color='black')],
     [sg.Button('Parse Now', button_color=('black', '#44d62c'))],
     [sg.Text('Status: Not parsed', key='-STATUS1-', text_color='#44d62c', background_color='black')],
     [sg.Text('Where would you like your output file to go?', text_color='#44d62c', background_color='black')],
@@ -222,11 +224,11 @@ while True:
         window["-FILE LIST-"].update(fpaths)
 
     if event == 'Parse Now':
+        parsed_numbers_602 = []
+        parsed_numbers_700 = []
+        parsed_numbers_804 = []
+        parsed_numbers_cinebench = []
         try:
-            parsed_numbers_602 = []
-            parsed_numbers_700 = []
-            parsed_numbers_804 = []
-            parsed_numbers_cinebench = []
             for file_path in fpaths:
                 while True:
                     try:
@@ -257,9 +259,21 @@ while True:
 
     if event == 'Create':
         try:
-            new_xlsx(parsed_numbers_602, parsed_numbers_700, parsed_numbers_804, parsed_numbers_cinebench, outputpath)
+            new_xlsx(parsed_numbers_602, parsed_numbers_700, parsed_numbers_804, parsed_numbers_cinebench,
+                     outputpath)
             window['-STATUS2-'].update('File created!', text_color='#44d62c')
         except IndexError:
+            print('Index error')
             continue
         except NameError:
+            print('name error')
+            window['-STATUS2-'].update('No files parsed yet!', text_color='red')
             continue
+        except FileNotFoundError:
+            window['-STATUS2-'].update('Invalid Destination, please use the browse function.\n'
+                                       'Please press Parse Now again before creating file.', text_color='red')
+            continue
+        except PermissionError:
+            window['-STATUS2-'].update(''
+                                       'Permission denied. Please close the Excel file.\n'
+                                       'Please press Parse Now again before creating file.', text_color='red')
