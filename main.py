@@ -35,7 +35,7 @@ functions_column = [
         sg.In(size=(25, 1), enable_events=True, key='-OUTPUTPATH-'),
         sg.FolderBrowse(button_color=('black', '#44d62c'))
     ],
-    [sg.Button('Create', button_color=('black', '#44d62c'), size=(10, 2), disabled=True, key='-CREATE-')],
+    [sg.Button('Create', button_color=('black', '#44d62c'), size=(10, 2))],
     [sg.Text('Status: Not created, not parsed', key='-STATUS2-', text_color='red', background_color='black')]
 ]
 
@@ -44,7 +44,7 @@ layout = [
     [
         sg.Column(file_list_column, background_color='black'),
         sg.VSeperator(color='#44d62c'),
-        sg.Column(functions_column, background_color='black', visible=False, key='-FUNCTIONS-'),
+        sg.Column(functions_column, background_color='black'),
     ]
 ]
 
@@ -60,12 +60,6 @@ while True:
     # Folder name was filled in, make a list of files in the folder
     if event == "-FOLDER-":
         folder = values["-FOLDER-"]
-        if os.path.isdir(folder):
-            window['-STATUS2-'].update('', text_color='red')
-            window['-FUNCTIONS-'].update(visible=True)
-        else:
-            window['-STATUS2-'].update('Invalid input folder', text_color='red')
-            window['-FUNCTIONS-'].update(visible=False)
         try:
             # Get list of files in folder
             file_list = os.listdir(folder)
@@ -145,12 +139,6 @@ while True:
 
     if event == '-OUTPUTPATH-':
         outputpath = values["-OUTPUTPATH-"]
-        if os.path.isdir(outputpath):
-            window['-STATUS2-'].update('', text_color='red')
-            window['-CREATE-'].update(disabled=False)
-        else:
-            window['-STATUS2-'].update('Invalid input folder', text_color='red')
-            window['-CREATE-'].update(disabled=False)
 
     if event == 'Create':
         try:
@@ -161,18 +149,19 @@ while True:
                      parsed_numbers_3dmark,
                      output_file_path=outputpath)
             window['-STATUS2-'].update('File created!', text_color='#44d62c')
-        except IndexError:
-            print('Index error')
-            # continue
+        # except IndexError:
+        #     print('Index error')
+        #     continue
         except NameError:
             print('name error')
             window['-STATUS2-'].update('No files parsed yet!', text_color='red')
-            # continue
+            continue
         except FileNotFoundError:
             window['-STATUS2-'].update('Invalid Destination, please use the browse function.\n'
                                        'Please press Parse Now again before creating file.', text_color='red')
-            # continue
+            continue
         except PermissionError:
             window['-STATUS2-'].update(''
                                        'Permission denied. Please close the Excel file.\n'
                                        'Please press Parse Now again before creating file.', text_color='red')
+
