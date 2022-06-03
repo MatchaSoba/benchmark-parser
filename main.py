@@ -1,7 +1,7 @@
 import PySimpleGUI as sg
 import os.path
 from functions import *
-
+from xmlfunctions import *
 
 # -----------------------------------ALL GUI HERE-------------------------------------------
 # First the window layout in 2 columns
@@ -70,18 +70,21 @@ while True:
             for f in file_list
             if os.path.isfile(os.path.join(folder, f))
                and f.lower().endswith('.txt')
+               or f.lower().endswith('.xml')
         ]
         fpaths = [
             folder + '/' + f for f in fnames
         ]
 
-        window["-FILE LIST-"].update(fpaths)
+        window["-FILE LIST-"].update(fnames)
 
     if event == 'Parse Now':
         parsed_numbers_602 = []
         parsed_numbers_700 = []
         parsed_numbers_804 = []
         parsed_numbers_cinebench = []
+        parsed_numbers_3dmark = []
+        parsed_numbers_3dmark_raw = []
         try:
             for file_path in fpaths:
                 while True:
@@ -100,7 +103,33 @@ while True:
                             parsed_numbers_804.append(parse_text_cdm(file_path, 'utf8'))
                             break
                         except IndexError:
-                            parsed_numbers_cinebench.append(parse_text_cinebench(file_path, 'utf8'))
+                            try:
+                                parsed_numbers_cinebench.append(parse_text_cinebench(file_path, 'utf8'))
+                                break
+                            except IndexError:
+                                parsed_numbers_3dmark_raw.append(parse_text_3d(file_path))
+                                for item in parsed_numbers_3dmark_raw:
+                                    print(item)
+                                    for data in item:
+                                        print(data)
+                                        if 'Score' in data[0]:
+                                            parsed_numbers_3dmark.append(data)
+                                        elif 'score' in data[0]:
+                                            parsed_numbers_3dmark.append(data)
+                                        elif 'Dlss' in data[0]:
+                                            parsed_numbers_3dmark.append(data)
+                                        elif 'Raytracing' in data[0]:
+                                            parsed_numbers_3dmark.append(data)
+                                    for reading in parsed_numbers_3dmark:
+                                        if 'ForPass' in reading[0]:
+                                            parsed_numbers_3dmark.remove(reading)
+                                        elif 'forpass' in reading[0]:
+                                            parsed_numbers_3dmark.remove(reading)
+                                    new_parsed_numbers_3dmark = []
+                                    for reading in parsed_numbers_3dmark:
+                                        if reading not in new_parsed_numbers_3dmark:
+                                            new_parsed_numbers_3dmark.append(reading)
+                                    parsed_numbers_3dmark = new_parsed_numbers_3dmark
                             break
 
             window['-STATUS1-'].update('Files parsed!')
@@ -113,12 +142,16 @@ while True:
 
     if event == 'Create':
         try:
-            new_xlsx(parsed_numbers_602, parsed_numbers_700, parsed_numbers_804, parsed_numbers_cinebench,
-                     outputpath)
+            new_xlsx(parsed_numbers_602,
+                     parsed_numbers_700,
+                     parsed_numbers_804,
+                     parsed_numbers_cinebench,
+                     parsed_numbers_3dmark,
+                     output_file_path=outputpath)
             window['-STATUS2-'].update('File created!', text_color='#44d62c')
-        except IndexError:
-            print('Index error')
-            continue
+        # except IndexError:
+        #     print('Index error')
+        #     continue
         except NameError:
             print('name error')
             window['-STATUS2-'].update('No files parsed yet!', text_color='red')
