@@ -56,16 +56,8 @@ def parse_text_cdm(input_file_path, encoding='utf16'):
     output_list = [mb_readings_formatted, iops_readings_formatted, app_version]
     return output_list
 
-def parse_text_3d(input_file_path):
-    mytree = ET.parse(input_file_path)
-    myroot = mytree.getroot()
 
-def parse_text_pc(input_file_path):
-    mytree = ET.parse(input_file_path)
-    myroot = mytree.getroot()
-
-
-def new_xlsx(pn_602=None, pn_700=None, pn_804=None, pn_cinebench=None, output_file_path=''):
+def new_xlsx(pn_602=None, pn_700=None, pn_804=None, pn_cinebench=None, pn_3dmark=None, pn_pcmark=None, output_file_path=''):
     if pn_602 is None:
         pn_602 = []
     dest_filename = 'output.xlsx'
@@ -146,6 +138,12 @@ def new_xlsx(pn_602=None, pn_700=None, pn_804=None, pn_cinebench=None, output_fi
     ws.append(headers_cinebench)
     for test in pn_cinebench:
         ws.append(test)
+    ws.append(header_3dmark)
+    for item in pn_3dmark:
+        ws.append(item)
+    ws.append([])
+    # ws.append(pn_pcmark)
+    # ws.append(header_pcmark)
 
     dims = {}
     for row in ws.rows:
@@ -155,3 +153,4 @@ def new_xlsx(pn_602=None, pn_700=None, pn_804=None, pn_cinebench=None, output_fi
     for col, value in dims.items():
         ws.column_dimensions[col].width = value
         wb.save(dest_filepath + '/' + dest_filename)
+        
