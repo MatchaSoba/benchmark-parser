@@ -35,7 +35,7 @@ functions_column = [
         sg.In(size=(25, 1), enable_events=True, key='-OUTPUTPATH-'),
         sg.FolderBrowse(button_color=('black', '#44d62c'))
     ],
-    [sg.Button('Create', button_color=('black', '#44d62c'), size=(10, 2))],
+    [sg.Button('Create', button_color=('black', '#44d62c'), size=(10, 2), disabled=True, key='-CREATE-')],
     [sg.Text('Status: Not created, not parsed', key='-STATUS2-', text_color='red', background_color='black')]
 ]
 
@@ -44,7 +44,7 @@ layout = [
     [
         sg.Column(file_list_column, background_color='black'),
         sg.VSeperator(color='#44d62c'),
-        sg.Column(functions_column, background_color='black'),
+        sg.Column(functions_column, background_color='black', visible=False, key='-FUNCTIONS-'),
     ]
 ]
 
@@ -60,6 +60,12 @@ while True:
     # Folder name was filled in, make a list of files in the folder
     if event == "-FOLDER-":
         folder = values["-FOLDER-"]
+        if os.path.isdir(folder):
+            window['-STATUS2-'].update('', text_color='red')
+            window['-FUNCTIONS-'].update(visible=True)
+        else:
+            window['-STATUS2-'].update('Invalid input folder', text_color='red')
+            window['-FUNCTIONS-'].update(visible=False)
         try:
             # Get list of files in folder
             file_list = os.listdir(folder)
@@ -139,8 +145,14 @@ while True:
 
     if event == '-OUTPUTPATH-':
         outputpath = values["-OUTPUTPATH-"]
+        if os.path.isdir(outputpath):
+            window['-STATUS2-'].update('', text_color='red')
+            window['-CREATE-'].update(disabled=False)
+        else:
+            window['-STATUS2-'].update('Invalid input folder', text_color='red')
+            window['-CREATE-'].update(disabled=True)
 
-    if event == 'Create':
+    if event == '-CREATE-':
         try:
             new_xlsx(parsed_numbers_602,
                      parsed_numbers_700,
