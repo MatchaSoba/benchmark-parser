@@ -149,9 +149,9 @@ while True:
                      parsed_numbers_3dmark,
                      output_file_path=outputpath)
             window['-STATUS2-'].update('File created!', text_color='#44d62c')
-        # except IndexError:
-        #     print('Index error')
-        #     continue
+        except IndexError:
+            print('Index error')
+            continue
         except NameError:
             print('name error')
             window['-STATUS2-'].update('No files parsed yet!', text_color='red')
